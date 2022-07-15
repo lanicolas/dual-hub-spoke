@@ -22,8 +22,8 @@
                 "name": "vnet-hub-01",
                 "subnetName": "default",
                 "addressPrefix": "172.1.0.0/24",
-                "subnetPrefix": "172.1.0.0/26",
-                "Gateway1SubnetPrefix": "172.1.0.64/26"
+                "subnetPrefix": "172.1.0.0/27",
+                "Gateway1SubnetPrefix": "172.1.0.32/27"
             }
         },
         "spokeNetwork01A": {
@@ -75,7 +75,7 @@
         },
         "location2": {
             "type": "string",
-            "defaultValue": "westeurope",
+            "defaultValue": "northeurope",
             "metadata": {
                 "description": "Location for the deployment of the second hub and spoke"
             }
@@ -93,8 +93,8 @@
                 "name": "vnet-hub-02",
                 "subnetName": "default",
                 "addressPrefix": "10.1.0.0/24",
-                "subnetPrefix": "10.1.0.0/26",
-                "Gateway2SubnetPrefix": "10.1.0.64/26"
+                "subnetPrefix": "10.1.0.0/27",
+                "Gateway2SubnetPrefix": "10.1.0.32/27"
             }
         },
         "spokeNetwork02A": {
@@ -130,7 +130,7 @@
                 "name": "AzureFirewall1",
                 "publicIPAddressName": "pip-firewall1",
                 "subnetName": "AzureFirewallSubnet",
-                "subnetPrefix": "172.1.0.64/26",
+                "subnetPrefix": "172.1.0.64/27",
                 "routeName": "r-nexthop-to-fw1"
             }
         },
@@ -140,7 +140,7 @@
                 "name": "AzureFirewall2",
                 "publicIPAddressName": "pip-firewall2",
                 "subnetName": "AzureFirewallSubnet",
-                "subnetPrefix": "10.1.0.64/26",
+                "subnetPrefix": "10.1.0.64/27",
                 "routeName": "r-nexthop-to-fw2"
             }
         }
