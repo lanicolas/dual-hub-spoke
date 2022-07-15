@@ -478,7 +478,7 @@
             "name": "[parameters('azureFirewall2').routeName]",
             "location": "[parameters('location2')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/azureFirewalls2', parameters('azureFirewall2').name)]"
+                "[resourceId('Microsoft.Network/azureFirewalls', parameters('azureFirewall2').name)]"
             ],
             "properties": {
                 "disableBgpRoutePropagation": false,
