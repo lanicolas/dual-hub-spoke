@@ -275,7 +275,6 @@
             }
         },
         {
-            "comments": "Network interface for Windows VM",
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2020-05-01",
             "name": "[variables('nicNameWindows')]",
@@ -303,7 +302,6 @@
             }
         },
         {
-            "comments": "Windows VMs on SpokeA",
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2019-07-01",
             "name": "[parameters('vmName1')]",
