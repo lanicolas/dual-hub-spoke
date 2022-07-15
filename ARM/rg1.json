@@ -79,7 +79,7 @@
                 "name": "AzureFirewall1",
                 "publicIPAddressName": "pip-firewall1",
                 "subnetName": "AzureFirewallSubnet",
-                "subnetPrefix": "172.1.1.64/26",
+                "subnetPrefix": "172.1.1.65/26",
                 "routeName": "r-nexthop-to-fw1"
             }
         }
