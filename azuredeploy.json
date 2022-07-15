@@ -1,0 +1,336 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location1": {
+            "type": "string",
+            "defaultValue": "westeurope",
+            "metadata": {
+                "description": "Location for the deployment of the first hub and spoke"
+            }
+        },
+        "hub1RgName": {
+            "type": "string",
+            "defaultValue": "Region1-RG",
+            "metadata": {
+                "description": "Name for the Resource Group in Region 1"
+            }
+        },
+        "hubNetwork01": {
+            "type": "object",
+            "defaultValue": {
+                "name": "vnet-hub-01",
+                "subnetName": "default",
+                "addressPrefix": "172.1.0.0/24",
+                "subnetPrefix": "172.1.0.0/26",
+                "Gateway1SubnetPrefix": "172.1.0.64/26"
+            }
+        },
+        "spokeNetwork01A": {
+            "type": "object",
+            "defaultValue": {
+                "name": "vnet-spoke-oneA",
+                "addressPrefix": "172.1.1.0/24",
+                "subnetName": "snet-spoke-resources",
+                "subnetPrefix": "172.1.1.0/26",
+                "subnetNsgName": "nsg-spoke-a-resources"
+            }
+        },
+        "spokeNetwork01B": {
+            "type": "object",
+            "defaultValue": {
+                "name": "vnet-spoke-oneB",
+                "addressPrefix": "172.1.2.0/24",
+                "subnetName": "snet-spoke-resources",
+                "subnetPrefix": "172.1.2.0/26",
+                "subnetNsgName": "nsg-spoke-b-resources"
+            }
+        },
+        "vmName1": {
+            "type": "string",
+            "defaultValue": "VM-01",
+            "metadata": {
+                "description": "Name of the Virtual Machine in RG1"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_D4s_v4",
+            "metadata": {
+                "description": "Size of the Azure virtual machine."
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "defaultValue": "useradmin",
+            "metadata": {
+                "description": "Admin username for the Azure virtual machine."
+            }
+        },
+        "adminPassword": {
+            "type": "string",
+            "metadata": {
+                "description": "Sassword for the Azure virtual Machine."
+            }
+        },
+        "location2": {
+            "type": "string",
+            "defaultValue": "westeurope",
+            "metadata": {
+                "description": "Location for the deployment of the second hub and spoke"
+            }
+        },
+        "hub2RgName": {
+            "type": "string",
+            "defaultValue": "Region2-RG",
+            "metadata": {
+                "description": "Name for the Resource Group in Region 2"
+            }
+        },
+        "hubNetwork02": {
+            "type": "object",
+            "defaultValue": {
+                "name": "vnet-hub-02",
+                "subnetName": "default",
+                "addressPrefix": "10.1.0.0/24",
+                "subnetPrefix": "10.1.0.0/26",
+                "Gateway2SubnetPrefix": "10.1.0.64/26"
+            }
+        },
+        "spokeNetwork02A": {
+            "type": "object",
+            "defaultValue": {
+                "name": "vnet-spoke-twoA",
+                "addressPrefix": "10.1.1.0/24",
+                "subnetName": "snet-spoke-resources",
+                "subnetPrefix": "10.1.1.0/26",
+                "subnetNsgName": "nsg-spoke-a-resources"
+            }
+        },
+        "spokeNetwork02B": {
+            "type": "object",
+            "defaultValue": {
+                "name": "vnet-spoke-twoB",
+                "addressPrefix": "10.1.2.0/24",
+                "subnetName": "snet-spoke-resources",
+                "subnetPrefix": "10.1.2.0/26",
+                "subnetNsgName": "nsg-spoke-b-resources"
+            }
+        },
+        "vmName2": {
+            "type": "string",
+            "defaultValue": "VM-02",
+            "metadata": {
+                "description": "Name of the Virtual Machine in RG2"
+            }
+        }
+    },
+    "variables": {
+        
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2021-04-01",
+            "name": "[parameters('hub1RgName')]",
+            "location": "[parameters('location1')]",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2021-04-01",
+            "name": "[parameters('hub2RgName')]",
+            "location": "[parameters('location2')]",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "RG1Deploy",
+            "resourceGroup": "[parameters('hub1RgName')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups', parameters('hub1RgName'))]"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "Inner"
+                },
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/lanicolas/dual-hub-spoke/main/ARM/rg1.json"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "hubNetwork01": {
+                        "value": "[parameters('hub1VNetName')]"
+                    },
+                    "spokeNetwork01A": {
+                        "value": "[parameters('hub1VNetName')]"
+                    },
+                    "spokeNetwork01B": {
+                        "value": "[parameters('hub1VNetName')]"
+                    },
+                    "vmName1": {
+                        "value": "[parameters('vmName1')]"
+                    },
+                    "vmSize": {
+                        "value": "[parameters('vmSize')]"
+                    },
+                    "adminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "location1": {
+                        "value": "[parameters('location1')]"
+                    },
+                    "hub1RgName": {
+                        "value": "[parameters('hub1RgName')]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "RG2Deploy",
+            "resourceGroup": "[parameters('hub2RgName')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups', parameters('hub2RgName'))]"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "Inner"
+                },
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/lanicolas/dual-hub-spoke/main/ARM/rg2.json"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "hubNetwork02": {
+                        "value": "[parameters('hub1VNetName')]"
+                    },
+                    "spokeNetwork02A": {
+                        "value": "[parameters('hub1VNetName')]"
+                    },
+                    "spokeNetwork02B": {
+                        "value": "[parameters('hub1VNetName')]"
+                    },
+                    "vmName2": {
+                        "value": "[parameters('vmName2')]"
+                    },
+                    "vmSize": {
+                        "value": "[parameters('vmSize')]"
+                    },
+                    "adminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "location2": {
+                        "value": "[parameters('location12)]"
+                    },
+                    "hub2RgName": {
+                        "value": "[parameters('hub2RgName')]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "route-hub1",
+            "resourceGroup": "[parameters('hub1RgName')]",
+            "dependsOn": [
+                "RG1Deploy",
+                "RG2Deploy"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "Inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "hub1RgName": {
+                        "value": "[parameters('hub1RgName')]"
+                    },
+                    "hub2RgName": {
+                        "value": "[parameters('hub2RgName')]"
+                    },
+                    "hubNetwork01": {
+                        "value": "[parameters('hub1VNetName')]"
+                    },
+                    "hubNetwork02": {
+                        "value": "[parameters('hub2VNetName')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "hub1RgName": {
+                            "type": "string"
+                        },
+                        "hubNetwork01": {
+                            "type": "object"
+                        },
+                        "hub2RgName": {
+                            "type": "string"
+                        },
+                        "hubNetwork02": {
+                            "type": "object"
+                        }
+                    },
+                    "variables": {
+                        
+                    },
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                            "apiVersion": "2020-05-01",
+                            "name": "[concat(parameters('hubNetwork01').name, '/gwPeering_', parameters('hubNetwork01').name, '_', parameters('hubNetwork02').name)]",
+                            "properties": {
+                                "peeringState": "Connected",
+                                "remoteVirtualNetwork": {
+                                    "id": "[resourceId('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('hub2RgName'), '/providers/Microsoft.Network/virtualNetworks/',parameters('hubNetwork02').name)]"
+                                },
+                                "allowVirtualNetworkAccess": true,
+                                "allowForwardedTraffic": true,
+                                "allowGatewayTransit": true,
+                                "useRemoteGateways": false,
+                                "remoteAddressSpace": {
+                                    "addressPrefixes": [
+                                        "[parameters('hubNetwork02').addressPrefix]"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                            "apiVersion": "2020-05-01",
+                            "name": "[concat(parameters('hubNetwork02').name, '/gwPeering_', parameters('hubNetwork02').name, '_', parameters('hubNetwork01').name)]",
+                            "properties": {
+                                "peeringState": "Connected",
+                                "remoteVirtualNetwork": {
+                                    "id": "[resourceId('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('hub1RgName'), '/providers/Microsoft.Network/virtualNetworks/',parameters('hubNetwork01').name)]"
+                                },
+                                "allowVirtualNetworkAccess": true,
+                                "allowForwardedTraffic": true,
+                                "allowGatewayTransit": true,
+                                "useRemoteGateways": false,
+                                "remoteAddressSpace": {
+                                    "addressPrefixes": [
+                                        "[parameters('hubNetwork01').addressPrefix]"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+
+    ],
+    "outputs": {}
+}

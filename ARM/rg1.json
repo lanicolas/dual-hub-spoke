@@ -1,0 +1,406 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location1": {
+            "type": "string",
+            "defaultValue": "westeurope",
+            "metadata": {
+                "description": "Location for the deployment of the first hub and spoke"
+            }
+        },
+        "hub1RgName": {
+            "type": "string",
+            "defaultValue": "Region1-RG",
+            "metadata": {
+                "description": "Name for the Resource Group in Region 1"
+            }
+        },
+        "hubNetwork01": {
+            "type": "object",
+            "defaultValue": {
+                "name": "vnet-hub-01",
+                "subnetName": "default",
+                "addressPrefix": "172.1.0.0/24",
+                "subnetPrefix": "172.1.0.0/26",
+                "Gateway1SubnetPrefix": "172.1.0.64/26"
+            }
+        },
+        "spokeNetwork01A": {
+            "type": "object",
+            "defaultValue": {
+                "name": "vnet-spoke-oneA",
+                "addressPrefix": "172.1.1.0/24",
+                "subnetName": "snet-spoke-resources",
+                "subnetPrefix": "172.1.1.0/26",
+                "subnetNsgName": "nsg-spoke-a-resources"
+            }
+        },
+        "spokeNetwork01B": {
+            "type": "object",
+            "defaultValue": {
+                "name": "vnet-spoke-oneB",
+                "addressPrefix": "172.1.2.0/24",
+                "subnetName": "snet-spoke-resources",
+                "subnetPrefix": "172.1.2.0/26",
+                "subnetNsgName": "nsg-spoke-b-resources"
+            }
+        },
+        "vmName1": {
+            "type": "string",
+            "defaultValue": "VM-01",
+            "metadata": {
+                "description": "Name of the Virtual Machine in RG1"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_D4s_v4",
+            "metadata": {
+                "description": "Size of the Azure virtual machine."
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "defaultValue": "useradmin",
+            "metadata": {
+                "description": "Admin username for the Azure virtual machine."
+            }
+        },
+        "adminPassword": {
+            "type": "string",
+            "metadata": {
+                "description": "Sassword for the Azure virtual Machine."
+            }
+        }
+    },
+    "variables": {
+        "nicNameWindows": "[concat(parameters('vmName1'),'-NIC')]",
+        "NSGName": "[concat(parameters('vmName1'),'-NSG')]",
+        "publicIpName01": "[concat(parameters('vmName1'),'-PIP')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2019-11-01",
+            "name": "[variables('NSGName')]",
+            "location": "[parameters('location1')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "RDP",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationPortRanges": [
+                                "3389"
+                            ],
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2020-05-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('hubNetwork01').name]",
+            "location": "[parameters('location1')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('hubNetwork01').addressPrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('hubNetwork01').subnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('hubNetwork01').subnetPrefix]",
+                            "privateEndpointNetworkPolicies": "Disabled"
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "[parameters('hubNetwork01').Gateway1SubnetPrefix]",
+                            "privateEndpointNetworkPolicies": "Disabled"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2020-05-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('spokeNetwork01A').name]",
+            "location": "[parameters('location1')]",
+            "dependsOn": [
+              "[resourceId('Microsoft.Network/networkSecurityGroups', variables('NSGName'))]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('spokeNetwork01A').addressPrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('spokeNetwork01A').subnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('spokeNetwork01A').subnetPrefix]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('NSGName'))]"
+                            },
+                            "privateEndpointNetworkPolicies": "Disabled"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2020-05-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('spokeNetwork01B').name]",
+            "location": "[parameters('location1')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('spokeNetwork01B').addressPrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('spokeNetwork01B').subnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('spokeNetwork01B').subnetPrefix]",
+                            "privateEndpointNetworkPolicies": "Disabled"
+                        }
+                    }
+                ]
+            }
+        },
+
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2019-11-01",
+            "name": "VPNGw01-PIP",
+            "location": "[parameters('location1')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "apiVersion": "2019-11-01",
+            "name": "VPNGw01",
+            "location": "[parameters('location1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork01').name)]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', 'VPNGw01-PIP')]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('hubNetwork01').name, 'GatewaySubnet')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'VPNGw01-PIP')]"
+                            }
+                        },
+                        "name": "vnetGatewayConfig"
+                    }
+                ],
+                "sku": {
+                    "name": "Basic",
+                    "tier": "Basic"
+                },
+                "gatewayType": "Vpn",
+                "vpnType": "RouteBased",
+                "enableBgp": false
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2019-11-01",
+            "name": "[variables('publicIpName01')]",
+            "location": "[parameters('location1')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "comments": "Network interface for Windows VM",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2020-05-01",
+            "name": "[variables('nicNameWindows')]",
+            "location": "[parameters('location1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork01A').name)]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName01'))]"
+
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName01'))]"
+                              },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('spokeNetwork01A').name, parameters('spokeNetwork01A').subnetName)]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "comments": "Windows VMs on SpokeA",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-07-01",
+            "name": "[parameters('vmName1')]",
+            "location": "[parameters('location1')]",
+            "dependsOn": [
+                "[concat(variables('nicNameWindows'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[parameters('vmName1')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2019-Datacenter",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicNameWindows')))]"
+                        }
+                    ]
+                }
+            }
+        },
+
+
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('hubNetwork01').name, '/gwPeering_', parameters('hubNetwork01').name, '_', parameters('spokeNetwork01A').name)]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork01').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork01A').name)]"
+            ],
+            "properties": {
+                "peeringState": "Connected",
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork01A').name)]"
+                },
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": true,
+                "useRemoteGateways": false,
+                "remoteAddressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('spokeNetwork01A').addressPrefix]"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('hubNetwork01').name, '/gwPeering_', parameters('hubNetwork01').name, '_', parameters('spokeNetwork01B').name)]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork01').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork01B').name)]"
+            ],
+            "properties": {
+                "peeringState": "Connected",
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork01B').name)]"
+                },
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": true,
+                "useRemoteGateways": false,
+                "remoteAddressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('spokeNetwork01B').addressPrefix]"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('spokeNetwork01A').name, '/gwPeering_', parameters('spokeNetwork01A').name, '_', parameters('hubNetwork01').name)]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork01').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork01A').name)]"
+            ],
+            "properties": {
+                "peeringState": "Connected",
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks',  parameters('hubNetwork01').name)]"
+                },
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": true,
+                "remoteAddressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('hubNetwork01').addressPrefix]"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('spokeNetwork01B').name, '/gwPeering_', parameters('spokeNetwork01B').name, '_', parameters('hubNetwork01').name)]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork01').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork01B').name)]"
+            ],
+            "properties": {
+                "peeringState": "Connected",
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks',  parameters('hubNetwork01').name)]"
+                },
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteAddressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('hubNetwork01').addressPrefix]"
+                    ]
+                }
+            }
+        }
+    ],
+
+    "outputs": {}
+}
