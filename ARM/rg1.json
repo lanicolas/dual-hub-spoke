@@ -374,7 +374,7 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork01').name)]",
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork01B').name)]",
-                "[resourceId('Microsoft.Network/virtualNetworkGateways, 'VPNGw1')]"
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', 'VPNGw1')]"
             ],
             "properties": {
                 "peeringState": "Connected",
@@ -399,7 +399,7 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork01').name)]",
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork01A').name)]",
-                "[resourceId('Microsoft.Network/virtualNetworkGateways, 'VPNGw1')]"
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', 'VPNGw1')]"
             ],
             "properties": {
                 "peeringState": "Connected",
@@ -424,7 +424,7 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork01').name)]",
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork01B').name)]",
-                "[resourceId('Microsoft.Network/virtualNetworkGateways, 'VPNGw1')]"
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', 'VPNGw1')]"
             ],
             "properties": {
                 "peeringState": "Connected",
