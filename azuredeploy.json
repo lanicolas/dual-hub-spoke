@@ -123,6 +123,26 @@
             "metadata": {
                 "description": "Name of the Virtual Machine in RG2"
             }
+        },
+        "azureFirewall1": {
+            "type": "object",
+            "defaultValue": {
+                "name": "AzureFirewall1",
+                "publicIPAddressName": "pip-firewall1",
+                "subnetName": "AzureFirewallSubnet",
+                "subnetPrefix": "172.1.1.65/26",
+                "routeName": "r-nexthop-to-fw1"
+            }
+        },
+        "azureFirewall2": {
+            "type": "object",
+            "defaultValue": {
+                "name": "AzureFirewall2",
+                "publicIPAddressName": "pip-firewall2",
+                "subnetName": "AzureFirewallSubnet",
+                "subnetPrefix": "172.1.1.65/26",
+                "routeName": "r-nexthop-to-fw2"
+            }
         }
     },
     "variables": {
@@ -186,6 +206,9 @@
                     },
                     "hub1RgName": {
                         "value": "[parameters('hub1RgName')]"
+                    },
+                    "azureFirewall1": {
+                        "value": "[parameters('azureFirewall1')]"
                     }
                 }
             }
@@ -233,6 +256,9 @@
                     },
                     "hub2RgName": {
                         "value": "[parameters('hub2RgName')]"
+                    },
+                    "azureFirewall2": {
+                        "value": "[parameters('azureFirewall2')]"
                     }
                 }
             }

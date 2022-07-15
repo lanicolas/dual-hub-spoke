@@ -72,6 +72,16 @@
             "metadata": {
                 "description": "Sassword for the Azure virtual Machine."
             }
+        },
+        "azureFirewall2": {
+            "type": "object",
+            "defaultValue": {
+                "name": "AzureFirewall1",
+                "publicIPAddressName": "pip-firewall2",
+                "subnetName": "AzureFirewallSubnet",
+                "subnetPrefix": "10.1.1.65/26",
+                "routeName": "r-nexthop-to-fw2"
+            }
         }
     },
     "variables": {
@@ -125,6 +135,12 @@
                         }
                     },
                     {
+                        "name": "[parameters('azureFirewall2').subnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('azureFirewall2').subnetPrefix]"
+                        }
+                    },
+                    {
                         "name": "GatewaySubnet",
                         "properties": {
                             "addressPrefix": "[parameters('hubNetwork02').Gateway2SubnetPrefix]",
@@ -140,7 +156,8 @@
             "name": "[parameters('spokeNetwork02A').name]",
             "location": "[parameters('location2')]",
             "dependsOn": [
-              "[resourceId('Microsoft.Network/networkSecurityGroups', variables('NSGName'))]"
+              "[resourceId('Microsoft.Network/networkSecurityGroups', variables('NSGName'))]",
+              "[resourceId('Microsoft.Network/routeTables', parameters('azureFirewall2').routeName)]"
             ],
             "properties": {
                 "addressSpace": {
@@ -156,7 +173,10 @@
                             "networkSecurityGroup": {
                                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('NSGName'))]"
                             },
-                            "privateEndpointNetworkPolicies": "Disabled"
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', parameters('azureFirewall2').routeName)]"
+                            }
                         }
                     }
                 ]
@@ -167,6 +187,9 @@
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[parameters('spokeNetwork02B').name]",
             "location": "[parameters('location2')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/routeTables', parameters('azureFirewall2').routeName)]"
+              ],
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
@@ -178,7 +201,10 @@
                         "name": "[parameters('spokeNetwork02B').subnetName]",
                         "properties": {
                             "addressPrefix": "[parameters('spokeNetwork02B').subnetPrefix]",
-                            "privateEndpointNetworkPolicies": "Disabled"
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', parameters('azureFirewall2').routeName)]"
+                            }
                         }
                     }
                 ]
@@ -194,6 +220,19 @@
                 "publicIPAllocationMethod": "Dynamic"
             }
         },
+        {
+            "apiVersion": "2019-11-01",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[parameters('azureFirewall2').publicIPAddressName]",
+            "location": "[parameters('location2')]",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        
         {
             "type": "Microsoft.Network/virtualNetworkGateways",
             "apiVersion": "2019-11-01",
@@ -402,6 +441,59 @@
                         "[parameters('hubNetwork02').addressPrefix]"
                     ]
                 }
+            }
+        },
+        {
+            "type": "Microsoft.Network/azureFirewalls",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('azureFirewall2').name]",
+            "location": "[parameters('location2')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork02').name)]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('azureFirewall2').publicIPAddressName)]"
+            ],
+            "properties": {
+                "sku": {
+                    "name": "AZFW_VNet",
+                    "tier": "Standard"
+                },
+                "threatIntelMode": "Alert",
+                "additionalProperties": {},
+                "ipConfigurations": [
+                    {
+                        "name": "[parameters('azureFirewall2').name]",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('azureFirewall2').publicIPAddressName)]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('hubNetwork02').name, parameters('azureFirewall2').subnetName)]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/routeTables",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('azureFirewall2').routeName]",
+            "location": "[parameters('location2')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/azureFirewalls2', parameters('azureFirewall2').name)]"
+            ],
+            "properties": {
+                "disableBgpRoutePropagation": false,
+                "routes": [
+                    {
+                        "name": "[parameters('azureFirewall2').routeName]",
+                        "properties": {
+                            "addressPrefix": "0.0.0.0/0",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[reference(resourceId('Microsoft.Network/azureFirewalls', parameters('azureFirewall2').name), '2020-05-01').ipConfigurations[0].properties.privateIpAddress]"
+                        }
+                    }
+                ]
             }
         }
     ],
