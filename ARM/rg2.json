@@ -350,7 +350,7 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork02').name)]",
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork02A').name)]",
-                "[resourceId('Microsoft.Network/virtualNetworkGateways, 'VPNGw2')]"
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', 'VPNGw2')]"
             ],
             "properties": {
                 "peeringState": "Connected",
