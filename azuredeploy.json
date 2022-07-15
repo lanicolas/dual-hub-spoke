@@ -161,13 +161,13 @@
                 "mode": "Incremental",
                 "parameters": {
                     "hubNetwork01": {
-                        "value": "[parameters('hub1VNetName')]"
+                        "value": "[parameters('hubNetwork01')]"
                     },
                     "spokeNetwork01A": {
-                        "value": "[parameters('hub1VNetName')]"
+                        "value": "[parameters('spokeNetwork01A')]"
                     },
                     "spokeNetwork01B": {
-                        "value": "[parameters('hub1VNetName')]"
+                        "value": "[parameters('spokeNetwork01B')]"
                     },
                     "vmName1": {
                         "value": "[parameters('vmName1')]"
@@ -208,13 +208,13 @@
                 "mode": "Incremental",
                 "parameters": {
                     "hubNetwork02": {
-                        "value": "[parameters('hub1VNetName')]"
+                        "value": "[parameters('hubNetwork02')]"
                     },
                     "spokeNetwork02A": {
-                        "value": "[parameters('hub1VNetName')]"
+                        "value": "[parameters('spokeNetwork02A')]"
                     },
                     "spokeNetwork02B": {
-                        "value": "[parameters('hub1VNetName')]"
+                        "value": "[parameters('spokeNetwork02B')]"
                     },
                     "vmName2": {
                         "value": "[parameters('vmName2')]"
@@ -229,7 +229,7 @@
                         "value": "[parameters('adminPassword')]"
                     },
                     "location2": {
-                        "value": "[parameters('location12)]"
+                        "value": "[parameters('location2')]"
                     },
                     "hub2RgName": {
                         "value": "[parameters('hub2RgName')]"
@@ -259,7 +259,7 @@
                         "value": "[parameters('hub2RgName')]"
                     },
                     "hubNetwork01": {
-                        "value": "[parameters('hub1VNetName')]"
+                        "value": "[parameters('hubNetwork01')]"
                     },
                     "hubNetwork02": {
                         "value": "[parameters('hub2VNetName')]"

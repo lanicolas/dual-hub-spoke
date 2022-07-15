@@ -310,7 +310,8 @@
             "name": "[concat(parameters('hubNetwork02').name, '/gwPeering_', parameters('hubNetwork02').name, '_', parameters('spokeNetwork02A').name)]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork02').name)]",
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork02A').name)]"
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork02A').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworkGateways/VPNGw2')]"
             ],
             "properties": {
                 "peeringState": "Connected",
@@ -334,7 +335,8 @@
             "name": "[concat(parameters('hubNetwork02').name, '/gwPeering_', parameters('hubNetwork02').name, '_', parameters('spokeNetwork02B').name)]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork02').name)]",
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork02B').name)]"
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork02B').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworkGateways/VPNGw2')]"
             ],
             "properties": {
                 "peeringState": "Connected",
@@ -358,7 +360,8 @@
             "name": "[concat(parameters('spokeNetwork02A').name, '/gwPeering_', parameters('spokeNetwork02A').name, '_', parameters('hubNetwork02').name)]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork02').name)]",
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork02A').name)]"
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork02A').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworkGateways/VPNGw2')]"
             ],
             "properties": {
                 "peeringState": "Connected",
@@ -382,7 +385,8 @@
             "name": "[concat(parameters('spokeNetwork02B').name, '/gwPeering_', parameters('spokeNetwork02B').name, '_', parameters('hubNetwork02').name)]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork02').name)]",
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork02B').name)]"
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork02B').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworkGateways/VPNGw2')]"
             ],
             "properties": {
                 "peeringState": "Connected",
