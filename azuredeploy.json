@@ -327,7 +327,7 @@
                         }
                     },
                     "variables": {
-                        
+                        "firewall2-ip": { "value": "[reference('RG2Deploy').outputs.Firewall2-IP.value]" }
                     },
                     "resources": [
                         {
@@ -362,7 +362,7 @@
                                         "properties": {
                                             "addressPrefix": "[parameters('hubNetwork02').addressPrefix]",
                                             "nextHopType": "VirtualAppliance",
-                                            "nextHopIpAddress": "[reference(concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('hub1RgName'), 'Microsoft.Network/azureFirewalls', parameters('azureFirewall2').name), '2020-05-01').ipConfigurations[0].properties.privateIpAddress]"
+                                            "nextHopIpAddress": "[variables('firewall2-ip')]"
                                         }
                                     }
                                 ]
@@ -398,12 +398,6 @@
                     },
                     "hubNetwork02": {
                         "value": "[parameters('hubNetwork02')]"
-                    },
-                    "azureFirewall1": {
-                        "value": "[parameters('azureFirewall1')]"
-                    },
-                    "azureFirewall2": {
-                        "value": "[parameters('azureFirewall2')]"
                     }
                 },
                 "template": {
@@ -421,16 +415,10 @@
                         },
                         "hubNetwork02": {
                             "type": "object"
-                        },
-                        "azureFirewall1": {
-                            "type": "object"
-                        },
-                        "azureFirewall2": {
-                            "type": "object"
                         }
                     },
                     "variables": {
-                        
+                        "firewall1-ip": { "value": "[reference('RG1Deploy').outputs.Firewall1-IP.value]" }
                     },
                     "resources": [
                         {
@@ -465,7 +453,7 @@
                                         "properties": {
                                             "addressPrefix": "[parameters('hubNetwork01').addressPrefix]",
                                             "nextHopType": "VirtualAppliance",
-                                            "nextHopIpAddress": "[reference(concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('hub1RgName'), 'Microsoft.Network/azureFirewalls', parameters('azureFirewall1').name), '2020-05-01').ipConfigurations[0].properties.privateIpAddress]"
+                                            "nextHopIpAddress": "[variables('firewall1-ip')]"
                                         }
                                     }
                                 ]

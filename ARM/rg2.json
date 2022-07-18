@@ -466,5 +466,10 @@
         }
     ],
 
-    "outputs": {}
+    "outputs": {
+        "Firewall2-IP": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/azureFirewalls', parameters('azureFirewall2').name), '2020-05-01').ipConfigurations[0].properties.privateIpAddress]"
+          }
+    }
 }
