@@ -4,65 +4,39 @@
     "parameters": {
         "location1": {
             "type": "string",
-            "defaultValue": "westeurope",
             "metadata": {
                 "description": "Location for the deployment of the first hub and spoke"
             }
         },
         "hub1RgName": {
             "type": "string",
-            "defaultValue": "Region1-RG",
             "metadata": {
                 "description": "Name for the Resource Group in Region 1"
             }
         },
         "hubNetwork01": {
-            "type": "object",
-            "defaultValue": {
-                "name": "vnet-hub-01",
-                "subnetName": "default",
-                "addressPrefix": "172.1.0.0/24",
-                "subnetPrefix": "172.1.0.0/26",
-                "Gateway1SubnetPrefix": "172.1.0.64/26"
-            }
+            "type": "object"
         },
         "spokeNetwork01A": {
-            "type": "object",
-            "defaultValue": {
-                "name": "vnet-spoke-oneA",
-                "addressPrefix": "172.1.1.0/24",
-                "subnetName": "snet-spoke-resources",
-                "subnetPrefix": "172.1.1.0/26",
-                "subnetNsgName": "nsg-spoke-a-resources"
-            }
+            "type": "object"
         },
         "spokeNetwork01B": {
-            "type": "object",
-            "defaultValue": {
-                "name": "vnet-spoke-oneB",
-                "addressPrefix": "172.1.2.0/24",
-                "subnetName": "snet-spoke-resources",
-                "subnetPrefix": "172.1.2.0/26",
-                "subnetNsgName": "nsg-spoke-b-resources"
-            }
+            "type": "object"
         },
         "vmName1": {
             "type": "string",
-            "defaultValue": "VM-01",
             "metadata": {
                 "description": "Name of the Virtual Machine in RG1"
             }
         },
         "vmSize": {
             "type": "string",
-            "defaultValue": "Standard_D4s_v4",
             "metadata": {
                 "description": "Size of the Azure virtual machine."
             }
         },
         "adminUsername": {
             "type": "string",
-            "defaultValue": "useradmin",
             "metadata": {
                 "description": "Admin username for the Azure virtual machine."
             }
@@ -74,14 +48,10 @@
             }
         },
         "azureFirewall1": {
-            "type": "object",
-            "defaultValue": {
-                "name": "AzureFirewall1",
-                "publicIPAddressName": "pip-firewall1",
-                "subnetName": "AzureFirewallSubnet",
-                "subnetPrefix": "172.1.0.64/26",
-                "routeName": "r-nexthop-to-fw1"
-            }
+            "type": "object"
+        },
+        "azureFirewall2": {
+            "type": "object"
         }
     },
     "variables": {

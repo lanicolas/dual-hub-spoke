@@ -130,7 +130,7 @@
                 "name": "AzureFirewall1",
                 "publicIPAddressName": "pip-firewall1",
                 "subnetName": "AzureFirewallSubnet",
-                "subnetPrefix": "172.1.0.64/27",
+                "subnetPrefix": "172.1.0.64/26",
                 "routeName": "r-nexthop-to-fw1"
             }
         },
@@ -140,7 +140,7 @@
                 "name": "AzureFirewall2",
                 "publicIPAddressName": "pip-firewall2",
                 "subnetName": "AzureFirewallSubnet",
-                "subnetPrefix": "10.1.0.64/27",
+                "subnetPrefix": "10.1.0.64/26",
                 "routeName": "r-nexthop-to-fw2"
             }
         }
@@ -209,6 +209,9 @@
                     },
                     "azureFirewall1": {
                         "value": "[parameters('azureFirewall1')]"
+                    },
+                    "azureFirewall2": {
+                        "value": "[parameters('azureFirewall2')]"
                     }
                 }
             }
@@ -257,6 +260,9 @@
                     "hub2RgName": {
                         "value": "[parameters('hub2RgName')]"
                     },
+                    "azureFirewall1": {
+                        "value": "[parameters('azureFirewall1')]"
+                    },
                     "azureFirewall2": {
                         "value": "[parameters('azureFirewall2')]"
                     }
@@ -288,7 +294,13 @@
                         "value": "[parameters('hubNetwork01')]"
                     },
                     "hubNetwork02": {
-                        "value": "[parameters('hub2VNetName')]"
+                        "value": "[parameters('hubNetwork02')]"
+                    },
+                    "azureFirewall1": {
+                        "value": "[parameters('azureFirewall1')]"
+                    },
+                    "azureFirewall2": {
+                        "value": "[parameters('azureFirewall2')]"
                     }
                 },
                 "template": {
@@ -306,6 +318,12 @@
                         },
                         "hubNetwork02": {
                             "type": "object"
+                        },
+                        "azureFirewall1": {
+                            "type": "object"
+                        },
+                        "azureFirewall2": {
+                            "type": "object"
                         }
                     },
                     "variables": {
@@ -319,7 +337,7 @@
                             "properties": {
                                 "peeringState": "Connected",
                                 "remoteVirtualNetwork": {
-                                    "id": "[resourceId('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('hub2RgName'), '/providers/Microsoft.Network/virtualNetworks/',parameters('hubNetwork02').name)]"
+                                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('hub2RgName'), '/providers/Microsoft.Network/virtualNetworks/',parameters('hubNetwork02').name)]"
                                 },
                                 "allowVirtualNetworkAccess": true,
                                 "allowForwardedTraffic": true,
@@ -333,13 +351,96 @@
                             }
                         },
                         {
+                            "type": "Microsoft.Network/routeTables",
+                            "apiVersion": "2020-05-01",
+                            "name": "hub1",
+                            "properties": {
+                                "disableBgpRoutePropagation": false,
+                                "routes": [
+                                    {
+                                        "name": "Hub1-Hub2",
+                                        "properties": {
+                                            "addressPrefix": "[parameters('hubNetwork02').addressPrefix]",
+                                            "nextHopType": "VirtualAppliance",
+                                            "nextHopIpAddress": "[reference(concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('hub1RgName'), 'Microsoft.Network/azureFirewalls', parameters('azureFirewall2').name), '2020-05-01').ipConfigurations[0].properties.privateIpAddress]"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "route-hub1",
+            "resourceGroup": "[parameters('hub2RgName')]",
+            "dependsOn": [
+                "RG1Deploy",
+                "RG2Deploy"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "Inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "hub1RgName": {
+                        "value": "[parameters('hub1RgName')]"
+                    },
+                    "hub2RgName": {
+                        "value": "[parameters('hub2RgName')]"
+                    },
+                    "hubNetwork01": {
+                        "value": "[parameters('hubNetwork01')]"
+                    },
+                    "hubNetwork02": {
+                        "value": "[parameters('hubNetwork02')]"
+                    },
+                    "azureFirewall1": {
+                        "value": "[parameters('azureFirewall1')]"
+                    },
+                    "azureFirewall2": {
+                        "value": "[parameters('azureFirewall2')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "hub1RgName": {
+                            "type": "string"
+                        },
+                        "hubNetwork01": {
+                            "type": "object"
+                        },
+                        "hub2RgName": {
+                            "type": "string"
+                        },
+                        "hubNetwork02": {
+                            "type": "object"
+                        },
+                        "azureFirewall1": {
+                            "type": "object"
+                        },
+                        "azureFirewall2": {
+                            "type": "object"
+                        }
+                    },
+                    "variables": {
+                        
+                    },
+                    "resources": [
+                        {
                             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
                             "apiVersion": "2020-05-01",
                             "name": "[concat(parameters('hubNetwork02').name, '/gwPeering_', parameters('hubNetwork02').name, '_', parameters('hubNetwork01').name)]",
                             "properties": {
                                 "peeringState": "Connected",
                                 "remoteVirtualNetwork": {
-                                    "id": "[resourceId('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('hub1RgName'), '/providers/Microsoft.Network/virtualNetworks/',parameters('hubNetwork01').name)]"
+                                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('hub1RgName'), '/providers/Microsoft.Network/virtualNetworks/',parameters('hubNetwork01').name)]"
                                 },
                                 "allowVirtualNetworkAccess": true,
                                 "allowForwardedTraffic": true,
@@ -350,6 +451,24 @@
                                         "[parameters('hubNetwork01').addressPrefix]"
                                     ]
                                 }
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Network/routeTables",
+                            "apiVersion": "2020-05-01",
+                            "name": "hub2",
+                            "properties": {
+                                "disableBgpRoutePropagation": false,
+                                "routes": [
+                                    {
+                                        "name": "Hub2-Hub1",
+                                        "properties": {
+                                            "addressPrefix": "[parameters('hubNetwork01').addressPrefix]",
+                                            "nextHopType": "VirtualAppliance",
+                                            "nextHopIpAddress": "[reference(concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('hub1RgName'), 'Microsoft.Network/azureFirewalls', parameters('azureFirewall1').name), '2020-05-01').ipConfigurations[0].properties.privateIpAddress]"
+                                        }
+                                    }
+                                ]
                             }
                         }
                     ]
