@@ -146,7 +146,7 @@
         }
     },
     "variables": {
-        
+
     },
     "resources": [
         {
@@ -296,12 +296,15 @@
                     "hubNetwork02": {
                         "value": "[parameters('hubNetwork02')]"
                     },
+                    "firewall2-ip": {
+                        "value": "[reference('RG2Deploy').outputs.Firewall2IP.value]" 
+                    },
+                    "location1": {
+                        "value": "[parameters('location1')]"
+                    },
                     "azureFirewall1": {
                         "value": "[parameters('azureFirewall1')]"
-                    },
-                    "azureFirewall2": {
-                        "value": "[parameters('azureFirewall2')]"
-                    }
+                    } 
                 },
                 "template": {
                     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -319,15 +322,18 @@
                         "hubNetwork02": {
                             "type": "object"
                         },
+                        "firewall2-ip": {
+                            "type": "string"
+                        },
+                        "location1": {
+                            "type": "string"
+                        },
                         "azureFirewall1": {
                             "type": "object"
-                        },
-                        "azureFirewall2": {
-                            "type": "object"
-                        }
+                        } 
                     },
                     "variables": {
-                        "firewall2-ip": { "value": "[reference('RG2Deploy').outputs.Firewall2-IP.value]" }
+
                     },
                     "resources": [
                         {
@@ -353,6 +359,7 @@
                         {
                             "type": "Microsoft.Network/routeTables",
                             "apiVersion": "2020-05-01",
+                            "location": "[parameters('location1')]",
                             "name": "hub1",
                             "properties": {
                                 "disableBgpRoutePropagation": false,
@@ -362,7 +369,52 @@
                                         "properties": {
                                             "addressPrefix": "[parameters('hubNetwork02').addressPrefix]",
                                             "nextHopType": "VirtualAppliance",
-                                            "nextHopIpAddress": "[variables('firewall2-ip')]"
+                                            "nextHopIpAddress": "[parameters('firewall2-ip')]"
+                                        }
+                                    },
+                                    {
+                                        "name": "Internet",
+                                        "properties": {
+                                            "addressPrefix": "0.0.0.0/0",
+                                            "nextHopType": "Internet"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "apiVersion": "2020-05-01",
+                            "type": "Microsoft.Network/virtualNetworks",
+                            "name": "[parameters('hubNetwork01').name]",
+                            "location": "[parameters('location1')]",
+                            "properties": {
+                                "addressSpace": {
+                                    "addressPrefixes": [
+                                        "[parameters('hubNetwork01').addressPrefix]"
+                                    ]
+                                },
+                                "subnets": [
+                                    {
+                                        "name": "[parameters('azureFirewall1').subnetName]",
+                                        "properties": {
+                                            "addressPrefix": "[parameters('azureFirewall1').subnetPrefix]",
+                                            "routeTable": {
+                                                "id": "[resourceId('Microsoft.Network/routeTables', 'hub1')]"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "GatewaySubnet",
+                                        "properties": {
+                                            "addressPrefix": "[parameters('hubNetwork01').Gateway1SubnetPrefix]",
+                                            "privateEndpointNetworkPolicies": "Disabled"
+                                        }
+                                    },
+                                    {
+                                        "name": "[parameters('hubNetwork01').subnetName]",
+                                        "properties": {
+                                            "addressPrefix": "[parameters('hubNetwork01').subnetPrefix]",
+                                            "privateEndpointNetworkPolicies": "Disabled"
                                         }
                                     }
                                 ]
@@ -398,7 +450,16 @@
                     },
                     "hubNetwork02": {
                         "value": "[parameters('hubNetwork02')]"
-                    }
+                    },
+                    "firewall1-ip": {
+                        "value": "[reference('RG1Deploy').outputs.Firewall1IP.value]" 
+                    },
+                    "location2": {
+                        "value": "[parameters('location2')]"
+                    },
+                    "azureFirewall2": {
+                        "value": "[parameters('azureFirewall2')]"
+                    }                   
                 },
                 "template": {
                     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -415,10 +476,19 @@
                         },
                         "hubNetwork02": {
                             "type": "object"
+                        },
+                        "firewall1-ip": {
+                           "type": "string"
+                        },
+                        "location2": {
+                            "type": "string"
+                         },
+                        "azureFirewall2": {
+                           "type": "object"
                         }
                     },
                     "variables": {
-                        "firewall1-ip": { "value": "[reference('RG1Deploy').outputs.Firewall1-IP.value]" }
+
                     },
                     "resources": [
                         {
@@ -444,6 +514,7 @@
                         {
                             "type": "Microsoft.Network/routeTables",
                             "apiVersion": "2020-05-01",
+                            "location": "[parameters('location2')]",
                             "name": "hub2",
                             "properties": {
                                 "disableBgpRoutePropagation": false,
@@ -453,7 +524,52 @@
                                         "properties": {
                                             "addressPrefix": "[parameters('hubNetwork01').addressPrefix]",
                                             "nextHopType": "VirtualAppliance",
-                                            "nextHopIpAddress": "[variables('firewall1-ip')]"
+                                            "nextHopIpAddress": "[parameters('firewall1-ip')]"
+                                        }
+                                    },
+                                    {
+                                        "name": "Internet",
+                                        "properties": {
+                                            "addressPrefix": "0.0.0.0/0",
+                                            "nextHopType": "Internet"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "apiVersion": "2020-05-01",
+                            "type": "Microsoft.Network/virtualNetworks",
+                            "name": "[parameters('hubNetwork02').name]",
+                            "location": "[parameters('location2')]",
+                            "properties": {
+                                "addressSpace": {
+                                    "addressPrefixes": [
+                                        "[parameters('hubNetwork02').addressPrefix]"
+                                    ]
+                                },
+                                "subnets": [
+                                    {
+                                        "name": "[parameters('azureFirewall2').subnetName]",
+                                        "properties": {
+                                            "addressPrefix": "[parameters('azureFirewall2').subnetPrefix]",
+                                            "routeTable": {
+                                                "id": "[resourceId('Microsoft.Network/routeTables', 'hub2')]"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "GatewaySubnet",
+                                        "properties": {
+                                            "addressPrefix": "[parameters('hubNetwork02').Gateway2SubnetPrefix]",
+                                            "privateEndpointNetworkPolicies": "Disabled"
+                                        }
+                                    },
+                                    {
+                                        "name": "[parameters('hubNetwork02').subnetName]",
+                                        "properties": {
+                                            "addressPrefix": "[parameters('hubNetwork02').subnetPrefix]",
+                                            "privateEndpointNetworkPolicies": "Disabled"
                                         }
                                     }
                                 ]
