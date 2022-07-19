@@ -21,6 +21,7 @@
             "defaultValue": {
                 "name": "vnet-hub-01",
                 "subnetName": "default",
+                "networkblock": "172.1.0.0/16",
                 "addressPrefix": "172.1.0.0/24",
                 "subnetPrefix": "172.1.0.0/27",
                 "Gateway1SubnetPrefix": "172.1.0.32/27"
@@ -92,6 +93,7 @@
             "defaultValue": {
                 "name": "vnet-hub-02",
                 "subnetName": "default",
+                "networkblock": "10.1.0.0/16",
                 "addressPrefix": "10.1.0.0/24",
                 "subnetPrefix": "10.1.0.0/27",
                 "Gateway2SubnetPrefix": "10.1.0.32/27"
@@ -367,7 +369,7 @@
                                     {
                                         "name": "Hub1-Hub2",
                                         "properties": {
-                                            "addressPrefix": "[parameters('hubNetwork02').addressPrefix]",
+                                            "addressPrefix": "[parameters('hubNetwork02').networkblock]",
                                             "nextHopType": "VirtualAppliance",
                                             "nextHopIpAddress": "[parameters('firewall2-ip')]"
                                         }
@@ -522,7 +524,7 @@
                                     {
                                         "name": "Hub2-Hub1",
                                         "properties": {
-                                            "addressPrefix": "[parameters('hubNetwork01').addressPrefix]",
+                                            "addressPrefix": "[parameters('hubNetwork01').networkblock]",
                                             "nextHopType": "VirtualAppliance",
                                             "nextHopIpAddress": "[parameters('firewall1-ip')]"
                                         }

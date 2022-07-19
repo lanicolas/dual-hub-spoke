@@ -439,6 +439,113 @@
                             }
                         }
                     }
+                ],
+                "networkRuleCollections": [
+                    {
+                        "name": "ToFirewallA",
+                        "properties": {
+                            "priority": 101,
+                            "action": {
+                                "type": "Allow"
+                            },
+                            "rules": [
+                                {
+                                    "name": "FirewallA",
+                                    "protocols": [
+                                        "Any"
+                                    ],
+                                    "sourceAddresses": [
+                                        "[parameters('spokeNetwork01A').subnetPrefix]"
+                                    ],
+                                    "destinationAddresses": [
+                                        "[reference(resourceId('Microsoft.Network/azureFirewalls', parameters('azureFirewall1').name), '2020-05-01').ipConfigurations[0].properties.privateIpAddress]"
+                                    ],
+                                    "sourceIpGroups": [],
+                                    "destinationIpGroups": [],
+                                    "destinationFqdns": [],
+                                    "destinationPorts": [
+                                        "*"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "ToFirewallB",
+                        "properties": {
+                            "priority": 101,
+                            "action": {
+                                "type": "Allow"
+                            },
+                            "rules": [
+                                {
+                                    "name": "FirewallB",
+                                    "protocols": [
+                                        "Any"
+                                    ],
+                                    "sourceAddresses": [
+                                        "[parameters('spokeNetwork01b').subnetPrefix]"
+                                    ],
+                                    "destinationAddresses": [
+                                        "[reference(resourceId('Microsoft.Network/azureFirewalls', parameters('azureFirewall2').name), '2020-05-01').ipConfigurations[0].properties.privateIpAddress]"
+                                    ],
+                                    "sourceIpGroups": [],
+                                    "destinationIpGroups": [],
+                                    "destinationFqdns": [],
+                                    "destinationPorts": [
+                                        "*"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "RGtraffic",
+                        "properties": {
+                            "priority": 100,
+                            "action": {
+                                "type": "Allow"
+                            },
+                            "rules": [
+                                {
+                                    "name": "Allow_RG_traffic1",
+                                    "protocols": [
+                                        "Any"
+                                    ],
+                                    "sourceAddresses": [
+                                        "[parameters('hubNetwork01').networkblock]"
+                                    ],
+                                    "destinationAddresses": [
+                                        "[parameters('hubNetwork02').networkblock]"
+                                    ],
+                                    "sourceIpGroups": [],
+                                    "destinationIpGroups": [],
+                                    "destinationFqdns": [],
+                                    "destinationPorts": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "name": "Allow_RG2_traffic",
+                                    "protocols": [
+                                        "Any"
+                                    ],
+                                    "sourceAddresses": [
+                                        "[parameters('hubNetwork02').networkblock]"
+                                    ],
+                                    "destinationAddresses": [
+                                        "[parameters('hubNetwork01').networkblock]"
+                                    ],
+                                    "sourceIpGroups": [],
+                                    "destinationIpGroups": [],
+                                    "destinationFqdns": [],
+                                    "destinationPorts": [
+                                        "*"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
                 ]
             }
         },
