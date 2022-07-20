@@ -205,6 +205,9 @@
             "apiVersion": "2019-11-01",
             "name": "Bastion01-PIP",
             "location": "[parameters('location1')]",
+            "sku": {
+                "name": "Standard"
+            },
             "properties": {
                 "publicIPAllocationMethod": "Static"
             }
