@@ -24,7 +24,8 @@
                 "networkblock": "172.1.0.0/16",
                 "addressPrefix": "172.1.0.0/24",
                 "subnetPrefix": "172.1.0.0/27",
-                "Gateway1SubnetPrefix": "172.1.0.32/27"
+                "Gateway1SubnetPrefix": "172.1.0.32/27",
+                "BastionPrefix": "172.1.0.128/26"
             }
         },
         "spokeNetwork01A": {
@@ -298,6 +299,9 @@
                     "hubNetwork02": {
                         "value": "[parameters('hubNetwork02')]"
                     },
+                    "firewall1-ip": {
+                        "value": "[reference('RG1Deploy').outputs.Firewall1IP.value]" 
+                    },
                     "firewall2-ip": {
                         "value": "[reference('RG2Deploy').outputs.Firewall2IP.value]" 
                     },
@@ -306,7 +310,16 @@
                     },
                     "azureFirewall1": {
                         "value": "[parameters('azureFirewall1')]"
-                    } 
+                    },
+                    "azureFirewall2": {
+                        "value": "[parameters('azureFirewall2')]"
+                    },
+                    "spokeNetwork01A": {
+                        "value": "[parameters('spokeNetwork01A')]"
+                    },
+                    "spokeNetwork01B": {
+                        "value": "[parameters('spokeNetwork01B')]"
+                    }
                 },
                 "template": {
                     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -324,6 +337,9 @@
                         "hubNetwork02": {
                             "type": "object"
                         },
+                        "firewall1-ip": {
+                            "type": "string"
+                        },
                         "firewall2-ip": {
                             "type": "string"
                         },
@@ -332,7 +348,16 @@
                         },
                         "azureFirewall1": {
                             "type": "object"
-                        } 
+                        },
+                        "azureFirewall2": {
+                            "type": "object"
+                        },
+                        "spokeNetwork01A": {
+                            "type": "object"
+                        },
+                        "spokeNetwork01B": {
+                            "type": "object"
+                        }
                     },
                     "variables": {
 
@@ -363,10 +388,6 @@
                             "apiVersion": "2020-05-01",
                             "name": "[parameters('azureFirewall1').name]",
                             "location": "[parameters('location1')]",
-                            "dependsOn": [
-                                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork01').name)]",
-                                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('azureFirewall1').publicIPAddressName)]"
-                            ],
                             "properties": {
                                 "sku": {
                                     "name": "AZFW_VNet",
@@ -391,7 +412,7 @@
                                     {
                                         "name": "ToFirewallA",
                                         "properties": {
-                                            "priority": 101,
+                                            "priority": 100,
                                             "action": {
                                                 "type": "Allow"
                                             },
@@ -405,7 +426,7 @@
                                                         "[parameters('spokeNetwork01A').subnetPrefix]"
                                                     ],
                                                     "destinationAddresses": [
-                                                        "[reference(resourceId('Microsoft.Network/azureFirewalls', parameters('azureFirewall1').name), '2020-05-01').ipConfigurations[0].properties.privateIpAddress]"
+                                                        "[parameters('firewall2-ip')]"
                                                     ],
                                                     "sourceIpGroups": [],
                                                     "destinationIpGroups": [],
@@ -431,10 +452,10 @@
                                                         "Any"
                                                     ],
                                                     "sourceAddresses": [
-                                                        "[parameters('spokeNetwork01b').subnetPrefix]"
+                                                        "[parameters('spokeNetwork01B').subnetPrefix]"
                                                     ],
                                                     "destinationAddresses": [
-                                                        "[reference(resourceId('Microsoft.Network/azureFirewalls', parameters('azureFirewall2').name), '2020-05-01').ipConfigurations[0].properties.privateIpAddress]"
+                                                        "[parameters('firewall2-ip')]"
                                                     ],
                                                     "sourceIpGroups": [],
                                                     "destinationIpGroups": [],
@@ -449,7 +470,7 @@
                                     {
                                         "name": "RGtraffic",
                                         "properties": {
-                                            "priority": 100,
+                                            "priority": 102,
                                             "action": {
                                                 "type": "Allow"
                                             },
@@ -595,12 +616,24 @@
                     "firewall1-ip": {
                         "value": "[reference('RG1Deploy').outputs.Firewall1IP.value]" 
                     },
+                    "firewall2-ip": {
+                        "value": "[reference('RG2Deploy').outputs.Firewall2IP.value]" 
+                    },
                     "location2": {
                         "value": "[parameters('location2')]"
                     },
+                    "azureFirewall1": {
+                        "value": "[parameters('azureFirewall1')]"
+                    },
                     "azureFirewall2": {
                         "value": "[parameters('azureFirewall2')]"
-                    }                   
+                    },
+                    "spokeNetwork02A": {
+                        "value": "[parameters('spokeNetwork02A')]"
+                    },
+                    "spokeNetwork02B": {
+                        "value": "[parameters('spokeNetwork02B')]"
+                    }                  
                 },
                 "template": {
                     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -621,12 +654,24 @@
                         "firewall1-ip": {
                            "type": "string"
                         },
+                        "firewall2-ip": {
+                            "type": "string"
+                        },
                         "location2": {
                             "type": "string"
                          },
-                        "azureFirewall2": {
+                        "azureFirewall1": {
                            "type": "object"
-                        }
+                        },
+                        "azureFirewall2": {
+                            "type": "object"
+                         },
+                         "spokeNetwork02A": {
+                            "type": "object"
+                         },
+                         "spokeNetwork02B": {
+                            "type": "object"
+                         }
                     },
                     "variables": {
 
@@ -683,10 +728,6 @@
                             "apiVersion": "2020-05-01",
                             "name": "[parameters('azureFirewall2').name]",
                             "location": "[parameters('location2')]",
-                            "dependsOn": [
-                                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork02').name)]",
-                                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('azureFirewall2').publicIPAddressName)]"
-                            ],
                             "properties": {
                                 "sku": {
                                     "name": "AZFW_VNet",
@@ -711,7 +752,7 @@
                                     {
                                         "name": "ToFirewallA",
                                         "properties": {
-                                            "priority": 101,
+                                            "priority": 100,
                                             "action": {
                                                 "type": "Allow"
                                             },
@@ -722,10 +763,10 @@
                                                         "Any"
                                                     ],
                                                     "sourceAddresses": [
-                                                        "[parameters('spokeNetwork01A').subnetPrefix]"
+                                                        "[parameters('spokeNetwork02A').subnetPrefix]"
                                                     ],
                                                     "destinationAddresses": [
-                                                        "[reference(resourceId('Microsoft.Network/azureFirewalls', parameters('azureFirewall1').name), '2020-05-01').ipConfigurations[0].properties.privateIpAddress]"
+                                                        "[parameters('firewall1-ip')]"
                                                     ],
                                                     "sourceIpGroups": [],
                                                     "destinationIpGroups": [],
@@ -751,10 +792,10 @@
                                                         "Any"
                                                     ],
                                                     "sourceAddresses": [
-                                                        "[parameters('spokeNetwork01b').subnetPrefix]"
+                                                        "[parameters('spokeNetwork02B').subnetPrefix]"
                                                     ],
                                                     "destinationAddresses": [
-                                                        "[reference(resourceId('Microsoft.Network/azureFirewalls', parameters('azureFirewall2').name), '2020-05-01').ipConfigurations[0].properties.privateIpAddress]"
+                                                        "[parameters('firewall1-ip')]"
                                                     ],
                                                     "sourceIpGroups": [],
                                                     "destinationIpGroups": [],
@@ -769,7 +810,7 @@
                                     {
                                         "name": "RGtraffic",
                                         "properties": {
-                                            "priority": 100,
+                                            "priority": 102,
                                             "action": {
                                                 "type": "Allow"
                                             },

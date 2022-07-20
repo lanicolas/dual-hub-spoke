@@ -68,13 +68,17 @@
             "properties": {
                 "securityRules": [
                     {
-                        "name": "RDP",
+                        "name": "Bastion",
                         "properties": {
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
-                            "sourceAddressPrefix": "*",
+                            "sourceAddressPrefixes": [
+                                "[parameters('hubNetwork01').networkblock]",
+                                "[parameters('hubNetwork02').networkblock]"
+                            ],
                             "destinationPortRanges": [
-                                "3389"
+                                "3389",
+                                "22"
                             ],
                             "destinationAddressPrefix": "*",
                             "access": "Allow",
@@ -114,6 +118,13 @@
                         "name": "GatewaySubnet",
                         "properties": {
                             "addressPrefix": "[parameters('hubNetwork01').Gateway1SubnetPrefix]",
+                            "privateEndpointNetworkPolicies": "Disabled"
+                        }
+                    },
+                    {
+                        "name": "AzureBastionSubnet",
+                        "properties": {
+                            "addressPrefix": "[parameters('hubNetwork01').BastionPrefix]",
                             "privateEndpointNetworkPolicies": "Disabled"
                         }
                     }
@@ -188,6 +199,15 @@
             "location": "[parameters('location1')]",
             "properties": {
                 "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2019-11-01",
+            "name": "Bastion01-PIP",
+            "location": "[parameters('location1')]",
+            "properties": {
+                "publicIPAllocationMethod": "Static"
             }
         },
         {
@@ -458,6 +478,32 @@
                             "addressPrefix": "0.0.0.0/0",
                             "nextHopType": "VirtualAppliance",
                             "nextHopIpAddress": "[reference(resourceId('Microsoft.Network/azureFirewalls', parameters('azureFirewall1').name), '2020-05-01').ipConfigurations[0].properties.privateIpAddress]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "comments": "Azure Bastion and diagnostic configuration",
+            "type": "Microsoft.Network/bastionHosts",
+            "apiVersion": "2020-06-01",
+            "name": "Bastion01",
+            "location": "[parameters('location1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork01').name)]",
+                "[resourceId('Microsoft.Network/publicIpAddresses', 'Bastion01-PIP')]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "IpConf",
+                        "properties": {
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('hubNetwork01').name, 'AzureBastionSubnet')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', 'Bastion01-PIP')]"
+                            }
                         }
                     }
                 ]

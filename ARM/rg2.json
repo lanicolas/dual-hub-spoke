@@ -68,13 +68,17 @@
             "properties": {
                 "securityRules": [
                     {
-                        "name": "RDP",
+                        "name": "Bastion",
                         "properties": {
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
-                            "sourceAddressPrefix": "*",
+                            "sourceAddressPrefixes": [
+                                "[parameters('hubNetwork01').networkblock]",
+                                "[parameters('hubNetwork02').networkblock]"
+                            ],
                             "destinationPortRanges": [
-                                "3389"
+                                "3389",
+                                "22"
                             ],
                             "destinationAddressPrefix": "*",
                             "access": "Allow",
