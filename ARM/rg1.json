@@ -73,8 +73,7 @@
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "sourceAddressPrefixes": [
-                                "[parameters('hubNetwork01').networkblock]",
-                                "[parameters('hubNetwork02').networkblock]"
+                                "[parameters('hubNetwork01').networkblock]"
                             ],
                             "destinationPortRanges": [
                                 "3389",
