@@ -14,6 +14,9 @@
                 "description": "Name for the Resource Group in Region 2"
             }
         },
+        "hubNetwork01": {
+            "type": "object"
+        },
         "hubNetwork02": {
             "type": "object"
         },
@@ -73,6 +76,7 @@
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "sourceAddressPrefixes": [
+                                "[parameters('hubNetwork01').networkblock]",
                                 "[parameters('hubNetwork02').networkblock]"
                             ],
                             "destinationPortRanges": [

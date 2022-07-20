@@ -17,6 +17,9 @@
         "hubNetwork01": {
             "type": "object"
         },
+        "hubNetwork02": {
+            "type": "object"
+        },
         "spokeNetwork01A": {
             "type": "object"
         },
@@ -73,7 +76,8 @@
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "sourceAddressPrefixes": [
-                                "[parameters('hubNetwork01').networkblock]"
+                                "[parameters('hubNetwork01').networkblock]",
+                                "[parameters('hubNetwork02').networkblock]"
                             ],
                             "destinationPortRanges": [
                                 "3389",
